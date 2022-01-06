@@ -38,17 +38,14 @@ func init() {
 
 func main() {
 
-	client.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		commands.CreateCommands(s, os.Getenv("DISCORD_GUILD"))
-	})
-
-	client.AddHandler(messageCreate)
-
 	client.Identify.Intents = discordgo.IntentsAll
 
-	err := client.Open()
-	if err != nil {
-		fmt.Println("error opening connection,", err)
+	client.AddHandler(discordReady)
+	client.AddHandler(discordMessageCreate)
+
+	if err := client.Open(); err != nil {
+		logger.Error("Error with opening connection: " + err.Error())
+		logger.Error("Shutdown")
 		return
 	}
 
@@ -62,7 +59,11 @@ func main() {
 	logger.Log("Shutdown")
 }
 
-func messageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
+func discordReady(s *discordgo.Session, r *discordgo.Ready) {
+	commands.CreateCommands(s, os.Getenv("DISCORD_GUILD"))
+}
+
+func discordMessageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
 
 	// Ignore all messages created by the bot itself
 	// This isn't required in this specific example but it's a good practice.
