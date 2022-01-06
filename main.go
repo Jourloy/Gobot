@@ -39,29 +39,25 @@ func init() {
 func main() {
 
 	client.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		commands.CreateCommands(s, "437601028662231040")
+		commands.CreateCommands(s, os.Getenv("DISCORD_GUILD"))
 	})
 
 	client.AddHandler(messageCreate)
 
-	// In this example, we only care about receiving message events.
 	client.Identify.Intents = discordgo.IntentsAll
 
-	// Open a websocket connection to Discord and begin listening.
 	err := client.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		return
 	}
 
-	// Wait here until CTRL-C or other term signal is received.
 	logger.Log("Bot started")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 	fmt.Println("")
 	logger.Log("Close discord client...")
-	// Cleanly close down the Discord session.
 	client.Close()
 	logger.Log("Shutdown")
 }

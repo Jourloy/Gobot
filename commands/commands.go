@@ -1,6 +1,8 @@
 package commands
 
 import (
+	"strconv"
+
 	logger "github.com/Jourloy/GoLogger"
 
 	c "github.com/bwmarrin/discordgo"
@@ -10,7 +12,7 @@ var (
 	commands = []*c.ApplicationCommand{
 		{
 			Name:        "me",
-			Description: "Not test command",
+			Description: "Покажет твой профиль",
 		},
 	}
 )
@@ -24,13 +26,9 @@ func CreateCommands(s *c.Session, g string) {
 		return
 	}
 
-	logger.Debug("Start creating commands...")
 	for i := range notCreatedCommands {
-		cmd, err := s.ApplicationCommandCreate(s.State.User.ID, g, notCreatedCommands[i])
-		if err != nil {
+		if _, err := s.ApplicationCommandCreate(s.State.User.ID, g, notCreatedCommands[i]); err != nil {
 			logger.Error("Error with creating command: " + err.Error())
-		} else {
-			logger.Debug("Command successfully created: " + cmd.Name)
 		}
 	}
 
@@ -38,8 +36,6 @@ func CreateCommands(s *c.Session, g string) {
 }
 
 func CheckCommands(s *c.Session, g string) ([]*c.ApplicationCommand, string) {
-	logger.Debug("Start check commands...")
-
 	appID := s.State.User.ID
 
 	cmds, err := s.ApplicationCommands(appID, g)
@@ -47,7 +43,10 @@ func CheckCommands(s *c.Session, g string) ([]*c.ApplicationCommand, string) {
 		return nil, err.Error()
 	}
 
-	logger.Debug("Start finding duplicated commands...")
+	logger.Info("Amount of commands: " + strconv.Itoa(len(cmds)))
+
+	// Find duplicated commands
+	// and remove
 
 	var count int
 	var duplicated []*c.ApplicationCommand
@@ -74,7 +73,8 @@ func CheckCommands(s *c.Session, g string) ([]*c.ApplicationCommand, string) {
 		}
 	}
 
-	logger.Debug("Start finding old commands...")
+	// Find old commands
+	// and remove
 
 	var oldCommands []*c.ApplicationCommand
 	var state bool
@@ -82,7 +82,7 @@ func CheckCommands(s *c.Session, g string) ([]*c.ApplicationCommand, string) {
 	for i := range cmds {
 		state = false
 		for j := range commands {
-			if commands[j].Name == cmds[i].Name {
+			if commands[j].Name == cmds[i].Name && commands[j].Description == cmds[i].Description {
 				state = true
 			}
 		}
@@ -98,7 +98,8 @@ func CheckCommands(s *c.Session, g string) ([]*c.ApplicationCommand, string) {
 		}
 	}
 
-	logger.Debug("Start define not created commands...")
+	// Find not created commands
+	// and return
 
 	var notCreatedCommands []*c.ApplicationCommand
 
