@@ -6,7 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	commands "github.com/Jourloy/Cyberbot/commands"
+	"github.com/Jourloy/Cyberbot/commands"
+	"github.com/Jourloy/Cyberbot/messages"
 	logger "github.com/Jourloy/GoLogger"
 
 	"github.com/bwmarrin/discordgo"
@@ -41,7 +42,7 @@ func main() {
 	client.Identify.Intents = discordgo.IntentsAll
 
 	client.AddHandler(discordReady)
-	client.AddHandler(discordMessageCreate)
+	client.AddHandler(messages.DiscordMessageCreate)
 
 	if err := client.Open(); err != nil {
 		logger.Error("Error with opening connection: " + err.Error())
@@ -61,18 +62,4 @@ func main() {
 
 func discordReady(s *discordgo.Session, r *discordgo.Ready) {
 	commands.CreateCommands(s, os.Getenv("DISCORD_GUILD"))
-}
-
-func discordMessageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
-
-	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
-	if msg.Author.ID == session.State.User.ID {
-		return
-	}
-	// If the message is "ping" reply with "Pong!"
-	if msg.Content == "ping" {
-		session.ChannelMessageDelete(msg.ChannelID, msg.ID)
-	}
-
 }
