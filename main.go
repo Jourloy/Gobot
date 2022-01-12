@@ -6,25 +6,25 @@ import (
 	"os/signal"
 	"syscall"
 
-	commands "github.com/Jourloy/Cyberbot/commands"
-	logger "github.com/Jourloy/GoLogger"
+	"github.com/Jourloy/Cyberbot/commands"
+	"github.com/Jourloy/Cyberbot/messages"
+	"github.com/Jourloy/GoLogger"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 )
 
 var client *discordgo.Session
+var logger GoLogger.Logger
 
 func init() {
-	logger.New("all", "Discord Main")
+	logger = GoLogger.New(5, "Discord Main")
 
-	logger.Debug("Loading .env file")
 	if err := godotenv.Load(); err != nil {
 		logger.Error(".env file not find")
 		return
 	}
 
-	logger.Debug("Loading discord client...")
 	if discord, err := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN")); err != nil {
 		logger.Error("Error with loading discord client")
 		fmt.Println(err)
@@ -37,45 +37,27 @@ func init() {
 }
 
 func main() {
-
-	client.AddHandler(func(s *discordgo.Session, r *discordgo.Ready) {
-		commands.CreateCommands(s, "437601028662231040")
-	})
-
-	client.AddHandler(messageCreate)
-
-	// In this example, we only care about receiving message events.
 	client.Identify.Intents = discordgo.IntentsAll
 
-	// Open a websocket connection to Discord and begin listening.
-	err := client.Open()
-	if err != nil {
-		fmt.Println("error opening connection,", err)
+	client.AddHandler(discordReady)
+	client.AddHandler(messages.DiscordMessageCreate)
+
+	if err := client.Open(); err != nil {
+		logger.Error("Error with opening connection: " + err.Error())
+		logger.Error("Shutdown")
 		return
 	}
 
-	// Wait here until CTRL-C or other term signal is received.
 	logger.Log("Bot started")
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 	fmt.Println("")
 	logger.Log("Close discord client...")
-	// Cleanly close down the Discord session.
 	client.Close()
 	logger.Log("Shutdown")
 }
 
-func messageCreate(session *discordgo.Session, msg *discordgo.MessageCreate) {
-
-	// Ignore all messages created by the bot itself
-	// This isn't required in this specific example but it's a good practice.
-	if msg.Author.ID == session.State.User.ID {
-		return
-	}
-	// If the message is "ping" reply with "Pong!"
-	if msg.Content == "ping" {
-		session.ChannelMessageDelete(msg.ChannelID, msg.ID)
-	}
-
+func discordReady(s *discordgo.Session, r *discordgo.Ready) {
+	commands.CreateCommands(s, os.Getenv("DISCORD_GUILD"))
 }
