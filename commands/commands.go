@@ -1,24 +1,23 @@
 package commands
 
 import (
-	"strconv"
-
-	logger "github.com/Jourloy/GoLogger"
+	"github.com/Jourloy/GoLogger"
 
 	c "github.com/bwmarrin/discordgo"
 )
 
 var (
+	logger   GoLogger.Logger
 	commands = []*c.ApplicationCommand{
 		{
 			Name:        "me",
-			Description: "Покажет твой профиль",
+			Description: "Пока ничего не делает",
 		},
 	}
 )
 
 func CreateCommands(s *c.Session, g string) {
-	logger.New("all", "Discord commands")
+	logger = GoLogger.New(5, "Discord Comm")
 
 	notCreatedCommands, err := CheckCommands(s, g)
 	if err != "" {
@@ -42,8 +41,6 @@ func CheckCommands(s *c.Session, g string) ([]*c.ApplicationCommand, string) {
 	if err != nil {
 		return nil, err.Error()
 	}
-
-	logger.Info("Amount of commands: " + strconv.Itoa(len(cmds)))
 
 	// Find duplicated commands
 	// and remove

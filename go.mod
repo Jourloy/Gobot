@@ -3,7 +3,7 @@ module github.com/Jourloy/Cyberbot
 go 1.17
 
 require (
-	github.com/Jourloy/GoLogger v1.0.0
+	github.com/Jourloy/GoLogger v1.1.0
 	github.com/bwmarrin/discordgo v0.23.3-0.20211228023845-29269347e820
 	github.com/joho/godotenv v1.4.0
 )

@@ -8,24 +8,23 @@ import (
 
 	"github.com/Jourloy/Cyberbot/commands"
 	"github.com/Jourloy/Cyberbot/messages"
-	logger "github.com/Jourloy/GoLogger"
+	"github.com/Jourloy/GoLogger"
 
 	"github.com/bwmarrin/discordgo"
 	"github.com/joho/godotenv"
 )
 
 var client *discordgo.Session
+var logger GoLogger.Logger
 
 func init() {
-	logger.New("all", "Discord Main")
+	logger = GoLogger.New(5, "Discord Main")
 
-	logger.Debug("Loading .env file")
 	if err := godotenv.Load(); err != nil {
 		logger.Error(".env file not find")
 		return
 	}
 
-	logger.Debug("Loading discord client...")
 	if discord, err := discordgo.New("Bot " + os.Getenv("DISCORD_TOKEN")); err != nil {
 		logger.Error("Error with loading discord client")
 		fmt.Println(err)
@@ -38,7 +37,6 @@ func init() {
 }
 
 func main() {
-
 	client.Identify.Intents = discordgo.IntentsAll
 
 	client.AddHandler(discordReady)
